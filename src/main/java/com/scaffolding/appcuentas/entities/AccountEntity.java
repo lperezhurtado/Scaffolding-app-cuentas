@@ -38,4 +38,7 @@ public class AccountEntity {
 
     private Long idUser;
     
+    public int getMovementCount() {
+        return movement.size();
+    }
 }

@@ -2,6 +2,7 @@ package com.scaffolding.appcuentas.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import javax.transaction.Transactional;
 
 import com.scaffolding.appcuentas.Helper.IbanHelper;
 import com.scaffolding.appcuentas.beans.AccountBean;
@@ -24,16 +25,22 @@ public class AccountService {
     public AccountEntity getAccountByIdUser(Long idUser) {
         return accountRepo.findByIdUser(idUser);
     }
-    
+
     public String createAccount(AccountBean accountBean) {
-        String numberIban = createIbanNumber();
+        String numberIban = createNextValidIban();
         AccountEntity account = accountBeanToEntity(accountBean);
         account.setIban(numberIban);
         
         return accountRepo.save(account).getIban();
     }
 
-    
+    @Transactional
+    public String deleteAccountByIdUser(Long idUser) {
+        accountRepo.deleteByIdUser(idUser);
+        return "Cuenta del usuario con ID "+idUser+" eliminada";
+    }
+
+
     public AccountEntity accountBeanToEntity(AccountBean accountBean) {
         AccountEntity account = new AccountEntity();
         account.setOpeningDate(accountBean.getOpeningDate());
@@ -44,13 +51,21 @@ public class AccountService {
         return account;
     }
 
-    public String createIbanNumber() {
-        String numberIban = IbanHelper.getValidIbanNumber();
+    // public String createIbanNumber() {
+    //     String numberIban = IbanHelper.getValidIbanNumber();
 
-        while (accountRepo.existsByIban(numberIban)) {
-            numberIban = IbanHelper.getValidIbanNumber();
-        }
-        return numberIban;
+    //     while (accountRepo.existsByIban(numberIban)) {
+    //         numberIban = IbanHelper.getValidIbanNumber();
+    //     }
+    //     return numberIban;
+    // }
+
+    public String createNextValidIban() {
+        return IbanHelper.getNextValidIbanNumber(findLastIbanOnDDBB());
+    }
+
+    public String findLastIbanOnDDBB () {
+        return accountRepo.findByLastIban();
     }
 
 }

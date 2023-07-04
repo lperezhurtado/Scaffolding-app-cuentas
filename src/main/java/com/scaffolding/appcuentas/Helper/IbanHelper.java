@@ -19,20 +19,14 @@ public class IbanHelper {
         String newNumberIban = "";
         String aux = "";
 		boolean isValid = false;
-        int count = 0;
         
         while (!isValid) {
-            System.out.println("vuelta: "+count);
-            aux = String.valueOf(++ibanPartToChange);
+            aux = String.valueOf(ibanPartToChange+97);
             aux = addZerosIfNecessary(aux);
             
             newNumberIban = ENTITY_BANK + aux + lastIban.substring(20);
             isValid = validateIBAN(newNumberIban);
-            System.out.println("NEW IBAN: "+ newNumberIban);
-            System.out.println("isValid:" + isValid);
-            count++;
         }
-
         return getIbanNumberFormatted(aux);
     }
 
@@ -101,6 +95,9 @@ public class IbanHelper {
         }
         return number;
     }
+
+
+    
 
     public static String getValidIbanNumber() {
         String numberIban = "";

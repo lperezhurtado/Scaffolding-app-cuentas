@@ -9,6 +9,7 @@ import com.scaffolding.appcuentas.beans.AccountBean;
 import com.scaffolding.appcuentas.entities.AccountEntity;
 import com.scaffolding.appcuentas.repository.AccountRepository;
 
+
 @Service
 public class AccountService {
 
@@ -18,6 +19,9 @@ public class AccountService {
     @Autowired
     AccountRepository accountRepo;
 
+    @Autowired
+    BalanceService balanceService;
+
     public AccountEntity getAccount(Long id) {
         return accountRepo.findById(id).get();
     }
@@ -26,12 +30,14 @@ public class AccountService {
         return accountRepo.findByIdUser(idUser);
     }
 
+    @Transactional
     public String createAccount(AccountBean accountBean) {
         String numberIban = createNextValidIban();
-        AccountEntity account = accountBeanToEntity(accountBean);
-        account.setIban(numberIban);
+        AccountEntity account = accountBeanToEntity(accountBean, numberIban);
         
-        return accountRepo.save(account).getIban();
+        Long id = accountRepo.save(account).getId();
+        balanceService.createBalance(id);
+        return numberIban;
     }
 
     @Transactional
@@ -41,8 +47,9 @@ public class AccountService {
     }
 
 
-    public AccountEntity accountBeanToEntity(AccountBean accountBean) {
+    public AccountEntity accountBeanToEntity(AccountBean accountBean, String iban) {
         AccountEntity account = new AccountEntity();
+        account.setIban(iban);
         account.setOpeningDate(accountBean.getOpeningDate());
         account.setInterestPayment(accountBean.getInterestPayment());
         account.setOverdraftComission(accountBean.getOverdraftComission());

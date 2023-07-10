@@ -1,5 +1,8 @@
 package com.scaffolding.appcuentas.services;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.scaffolding.appcuentas.beans.TransferBean;
 import com.scaffolding.appcuentas.entities.BalanceEntity;
+import com.scaffolding.appcuentas.entities.MovementEntity;
 import com.scaffolding.appcuentas.exceptions.OperationException;
 import com.scaffolding.appcuentas.exceptions.ValidationException;
 import com.scaffolding.appcuentas.repository.AccountRepository;
@@ -74,11 +78,22 @@ public class BalanceService {
         balanceRepo.addBalance(transfer.getAmount(), transfer.getIdDestinyAccount());
         balanceRepo.substractBalance(transfer.getAmount(), balanceEntity.getIdAccount());
 
-
-
-        movementService.createMovement(transfer.getAmount(), sentTranfer(transfer.getAmount(), transfer.getIdDestinyAccount()), accountRepo.findById(transfer.getIdOriginAccout()).get(), transfer.getIdDestinyAccount(), transfer.getComission());
-        movementService.createMovement(transfer.getAmount(), receivedTransfer(transfer.getAmount(), transfer.getIdOriginAccout()), accountRepo.findById(transfer.getIdDestinyAccount()).get(), transfer.getIdDestinyAccount(), 0);
-
+        MovementEntity mvmnt = movementService.getMovement(transfer.getAmount(), transfer.getIdOriginAccout(), transfer.getIdDestinyAccount());
+        
+        if (mvmnt != null) {
+            Long lDur1 = Duration.between( mvmnt.getMovementDate(), LocalDateTime.now()).toMillis();
+            if ( lDur1 < 300000) {
+            System.out.println("DURATION IN MILLIS : "+(lDur1 - (5 * 60000)));
+            throw new ValidationException("No puede realizar la misma transferencia hasta pasados 5 minutos");
+            } else {
+                movementService.createMovement(transfer.getAmount(), sentTranfer(transfer.getAmount(), transfer.getIdDestinyAccount()), accountRepo.findById(transfer.getIdOriginAccout()).get(), transfer.getIdOriginAccout(), transfer.getIdDestinyAccount(), transfer.getComission());
+                movementService.createMovement(transfer.getAmount(), receivedTransfer(transfer.getAmount(), transfer.getIdOriginAccout()), accountRepo.findById(transfer.getIdDestinyAccount()).get(), transfer.getIdOriginAccout(), transfer.getIdDestinyAccount(), 0);
+            }
+        } else {
+            movementService.createMovement(transfer.getAmount(), sentTranfer(transfer.getAmount(), transfer.getIdDestinyAccount()), accountRepo.findById(transfer.getIdOriginAccout()).get(), transfer.getIdOriginAccout(), transfer.getIdDestinyAccount(), transfer.getComission());
+            movementService.createMovement(transfer.getAmount(), receivedTransfer(transfer.getAmount(), transfer.getIdOriginAccout()), accountRepo.findById(transfer.getIdDestinyAccount()).get(), transfer.getIdOriginAccout(), transfer.getIdDestinyAccount(), 0);
+        }
+        
         return "Se ha hecho transferencia";
     }
 
@@ -91,7 +106,7 @@ public class BalanceService {
 
         balanceRepo.substractBalance(transfer.getAmount(), balanceEntity.getIdAccount());
 
-        return movementService.createMovement(transfer.getAmount(), withDrawMessage(transfer.getAmount()), accountRepo.findById(transfer.getIdOriginAccout()).get() , transfer.getIdDestinyAccount(), 0);
+        return movementService.createMovement(transfer.getAmount(), withDrawMessage(transfer.getAmount()), accountRepo.findById(transfer.getIdOriginAccout()).get(), transfer.getIdOriginAccout(), transfer.getIdDestinyAccount(), 0);
     }
 
     public String deposit (TransferBean transfer) {
@@ -103,7 +118,7 @@ public class BalanceService {
 
         balanceRepo.addBalance(transfer.getAmount(), balanceEntity.getIdAccount());
 
-        return movementService.createMovement(transfer.getAmount(), depositMessage(transfer.getAmount()), accountRepo.findById(transfer.getIdOriginAccout()).get() , transfer.getIdDestinyAccount(), 0);
+        return movementService.createMovement(transfer.getAmount(), depositMessage(transfer.getAmount()), accountRepo.findById(transfer.getIdOriginAccout()).get(), transfer.getIdOriginAccout(), transfer.getIdDestinyAccount(), 0);
     }
 
     

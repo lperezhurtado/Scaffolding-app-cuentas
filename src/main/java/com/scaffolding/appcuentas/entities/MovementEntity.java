@@ -35,13 +35,14 @@ public class MovementEntity {
     private String movementDescription;
 
     @JsonIgnore  //SOLUCION a Cannot call sendError() after the response has been committed - https://stackoverflow.com/questions/20813496/tomcat-exception-cannot-call-senderror-after-the-response-has-been-committed
+    //@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id")
+    //@JsonIdentityReference(alwaysAsId=true) ESTOS 2 JSONIGNORE SOLO COGEN EL ID PARA MOSTRAR, NO EL OBJETO ENTERO
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_account")
     private AccountEntity account;
 
+    private Long idOriginAccount;
     private Long idDestinyAccount;
     private double comission;
-
-
     
 }

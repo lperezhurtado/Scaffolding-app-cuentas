@@ -27,4 +27,9 @@ public class MovementController {
             @PageableDefault(page = 0, size = 10, direction = Sort.Direction.ASC) Pageable oPageable, @RequestParam(name = "id", required = false) Long id) {
         return new ResponseEntity<Page<MovementEntity>>(movementService.getMovements(oPageable, id), HttpStatus.OK);
     }
+
+    @GetMapping("/get")
+    public ResponseEntity<MovementEntity> getMovement(@RequestParam(name = "amount", required = false) double amount, @RequestParam(name = "idOrigin", required = false) Long idOrigin, @RequestParam(name = "idDestiny", required = false) Long idDestiny) {
+        return new ResponseEntity<MovementEntity>(movementService.getMovement(amount, idOrigin, idDestiny), HttpStatus.OK);
+    }
 }

@@ -30,12 +30,32 @@ public class MovementService {
         ValidationHelper.validateDoubleIsNotNegative(movement.getAmount(), "Cantidad negativa no válida");
     }
 
+    public MovementEntity getMovement (double amount, Long idOrigin, Long idDestiny) {
+        MovementEntity movement = movementRepo.findLastMovement(amount, idOrigin, idDestiny);
+
+        // if (movement == null) {
+        //     throw new ValidationException("No se ha encontrado el registro");
+        // }
+
+        return movement;
+    }
+
     public Page<MovementEntity> getMovements (Pageable pageable, Long id) {
         return movementRepo.findByAccountId(id, pageable);
     }
 
-    public String createMovement(double amount, String description, AccountEntity account, Long idDestiny, double comission) {
-        MovementBean movementBean = new MovementBean(LocalDateTime.now(), (float)amount, description, account, idDestiny, comission);
+    public String createMovement(double amount, String description, AccountEntity account, Long idOrigin, Long idDestiny, double comission) {
+        // MovementEntity mvmnt = getMovement(amount, idOrigin, idDestiny);
+
+        // Long lDur1 = Duration.between( mvmnt.getMovementDate(), LocalDateTime.now()).toMillis();
+        
+        // System.out.println("FUERA DEL IF: "+lDur1);
+        // if ( lDur1 < 300000) {
+        //     System.out.println("DURATION IN MILLIS : "+(lDur1 - (5 * 60000)));
+        //     throw new ValidationException("No puede realizar la misma transferencia hasta pasados 5 minutos");
+        // }
+
+        MovementBean movementBean = new MovementBean(LocalDateTime.now(), (float)amount, description, account, idOrigin, idDestiny, comission);
         validateMovement(movementBean);
         MovementEntity movement = movementBeanToEntity(movementBean);
 
@@ -48,6 +68,7 @@ public class MovementService {
         movementEntity.setAmount(movementBean.getAmount());
         movementEntity.setMovementDescription(movementBean.getMovementDescription());
         movementEntity.setAccount(movementBean.getAccount());
+        movementEntity.setIdOriginAccount(movementBean.getIdOriginAccount());
         movementEntity.setIdDestinyAccount(movementBean.getIdDestinyAccount());
         movementEntity.setComission(movementBean.getComission());
 

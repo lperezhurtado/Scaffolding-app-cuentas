@@ -37,7 +37,7 @@ public class AccountEntity {
     private List<MovementEntity> movement;
 
     private Long idUser;
-    
+
     public int getMovementCount() {
         return movement.size();
     }
